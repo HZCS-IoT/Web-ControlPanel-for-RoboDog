@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speech to Text</title>
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #0b1220;
+    color: #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 40px;
+  }
+
+  .nav {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .nav a {
+    color: #14b8a6;
+    text-decoration: none;
+    padding: 8px 14px;
+    border: 1px solid rgba(20, 184, 166, 0.35);
+    border-radius: 999px;
+  }
+
+  h1 {
+    margin: 0 0 8px;
+    font-size: 1.6rem;
+  }
+
+  .subtitle {
+    margin: 0 0 20px;
+    color: #94a3b8;
+    text-align: center;
+  }
+
+  .card {
+    width: min(520px, 100%);
+    background: #121a2b;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 18px;
+    padding: 20px;
+  }
+
+  #status {
+    text-align: center;
+    min-height: 24px;
+    margin-bottom: 12px;
+    color: #94a3b8;
+    font-size: 15px;
+  }
+
+  #status.ok { color: #4ade80; }
+  #status.error { color: #f87171; }
+
+  .chat-box {
+    min-height: 220px;
+    max-height: 320px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    margin-bottom: 18px;
+  }
+
+  .message {
+    max-width: 88%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    line-height: 1.5;
+  }
+
+  .message.user {
+    align-self: flex-start;
+    background: rgba(20, 184, 166, 0.18);
+    border: 1px solid rgba(20, 184, 166, 0.35);
+  }
+
+  .message.bot {
+    align-self: flex-end;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+  }
+
+  .mic-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+
+  #micBtn {
+    width: 80px;
+    height: 80px;
+    border: none;
+    border-radius: 50%;
+    background: #14b8a6;
+    color: #042f2e;
+    font-size: 2rem;
+    cursor: pointer;
+  }
+
+  #micBtn.listening {
+    background: #ef4444;
+    color: #fff;
+    animation: pulse 1.2s infinite;
+  }
+
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.45); }
+    70% { box-shadow: 0 0 0 16px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  }
+
+  .hint {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 14px;
+    margin: 0 0 18px;
+  }
+
+  .history h3 {
+    margin: 0 0 10px;
+    font-size: 1rem;
+  }
+
+  .history ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 8px;
+  }
+
+  .history li {
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    color: #cbd5e1;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="index.html">لوحة التحكم</a>
+    <a href="speech.html">Speech to Text</a>
+  </nav>
+
+  <h1>المساعد الصوتي</h1>
+  <p class="subtitle">اضغط على الميكروفون وابدأ الحديث — يعمل أفضل على Chrome أو Edge</p>
+
+  <div class="card">
+    <div id="status">جاهز</div>
+
+    <div id="chatBox" class="chat-box">
+      <div class="message bot">مرحبًا! اضغط على زر الميكروفون وتحدّث معي بصوتك 🎤</div>
+    </div>
+
+    <div class="mic-wrap">
+      <button id="micBtn" type="button" aria-label="تسجيل">🎤</button>
+    </div>
+
+    <p class="hint">النص المحوّل يُحفظ تلقائيًا في قاعدة البيانات</p>
+
+    <div class="history">
+      <h3>آخر النصوص المحفوظة</h3>
+      <ul id="historyList"></ul>
+    </div>
+  </div>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const chatBox = document.getElementById('chatBox');
+    const micBtn = document.getElementById('micBtn');
+    const historyList = document.getElementById('historyList');
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+    let listening = false;
+
+    function setStatus(text, type) {
+      statusEl.textContent = text;
+      statusEl.className = type || '';
+    }
+
+    function addMessage(text, type) {
+      const div = document.createElement('div');
+      div.className = 'message ' + type;
+      div.textContent = text;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function saveSpeech(text) {
+      return fetch('save_speech.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'text=' + encodeURIComponent(text)
+      }).then(res => res.json());
+    }
+
+    function loadHistory() {
+      fetch('get_speech.php?limit=8')
+        .then(res => res.json())
+        .then(data => {
+          historyList.innerHTML = '';
+          if (data.status !== 'success' || !data.records.length) {
+            historyList.innerHTML = '<li>لا توجد نصوص محفوظة بعد</li>';
+            return;
+          }
+          data.records.forEach(record => {
+            const li = document.createElement('li');
+            li.textContent = record.text;
+            historyList.appendChild(li);
+          });
+        })
+        .catch(() => {
+          historyList.innerHTML = '<li>تعذر تحميل السجل</li>';
+        });
+    }
+
+    if (!SpeechRecognition) {
+      setStatus('المتصفح لا يدعم Speech Recognition — استخدم Chrome أو Edge', 'error');
+      micBtn.disabled = true;
+    } else {
+      recognition = new SpeechRecognition();
+      recognition.lang = 'ar-SA';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        listening = true;
+        micBtn.classList.add('listening');
+        setStatus('جاري الاستماع...');
+      };
+
+      recognition.onend = () => {
+        listening = false;
+        micBtn.classList.remove('listening');
+        setStatus('جاهز');
+      };
+
+      recognition.onerror = () => {
+        setStatus('حدث خطأ أثناء التسجيل — حاول مجددًا', 'error');
+      };
+
+      recognition.onresult = (event) => {
+        const text = event.results[0][0].transcript.trim();
+        if (!text) return;
+
+        addMessage(text, 'user');
+
+        saveSpeech(text)
+          .then(data => {
+            if (data.status === 'success') {
+              addMessage('تم حفظ النص في قاعدة البيانات ✓', 'bot');
+              setStatus('تم الحفظ بنجاح', 'ok');
+              loadHistory();
+            } else {
+              throw new Error(data.message || 'فشل الحفظ');
+            }
+          })
+          .catch(err => {
+            addMessage('حدث خطأ أثناء الاتصال بالخادم. حاول مجددًا.', 'bot');
+            setStatus(err.message || 'فشل الاتصال', 'error');
+          });
+      };
+
+      micBtn.addEventListener('click', () => {
+        if (listening) {
+          recognition.stop();
+        } else {
+          recognition.start();
+        }
+      });
+    }
+
+    loadHistory();
+  </script>
+
+</body>
+</html>
