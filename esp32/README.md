@@ -1,16 +1,29 @@
 # ESP32 — Task 1
 
-## Quick Steps
+<p align="center">
+  <img src="../docs/images/esp32-board.png" alt="ESP32 board" width="360">
+</p>
 
-1. Open `task1_http_client/task1_http_client.ino` in Arduino IDE
-2. Edit `WIFI_SSID` and `WIFI_PASS`
-3. Board: **ESP32 Dev Module** · Port: your COM port
-4. Upload → Serial Monitor **115200**
-5. Open [manual.html](https://webtask1.free.je/h/manual.html) → press forward
-6. Serial should show: `>>> NEW COMMAND: f (forward)`
+ESP32 يتصل بـ WiFi ويقرأ آخر أمر من `get_state.php` كل ثانيتين.
 
-## Requirements
+## Setup
 
-- ESP32 + USB cable
-- Same WiFi as your phone/PC (with internet)
-- Chrome not needed — this is ESP32 only
+1. Open `task1_http_client/task1_http_client.ino`
+2. Set `WIFI_SSID`, `WIFI_PASS`, and `SERVER_URL` (your PC IP + XAMPP)
+3. Board: **ESP32 Dev Module** · Baud: **115200**
+4. Upload and open Serial Monitor
+
+## Test
+
+1. Start XAMPP (Apache + MySQL)
+2. Open `http://YOUR_PC_IP/h/manual.html` from phone (same WiFi)
+3. Press **Forward** → Serial shows: `>>> NEW COMMAND: f (forward)`
+
+## Demo Videos
+
+| | Link |
+|---|------|
+| Voice (laptop) | [youtu.be/Qn9NiOmC40Q](https://youtu.be/Qn9NiOmC40Q) |
+| Manual (mobile) | [youtube.com/shorts/7RdiBsMd9t4](https://youtube.com/shorts/7RdiBsMd9t4) |
+
+> InfinityFree blocks ESP32 HTTP requests — use **local XAMPP** for Task 1.
