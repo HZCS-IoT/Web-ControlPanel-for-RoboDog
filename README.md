@@ -22,6 +22,7 @@
 
 | | الرابط |
 |---|--------|
+| 🏠 **Home** | **[https://webtask1.free.je/h/](https://webtask1.free.je/h/)** |
 | 🎤 **Voice Control** | **[https://webtask1.free.je/h/voice.html](https://webtask1.free.je/h/voice.html)** |
 | 🎮 **Manual Control** | **[https://webtask1.free.je/h/manual.html](https://webtask1.free.je/h/manual.html)** |
 | 📹 **Demo Video** | **[YouTube — اختبار يدوي + صوتي](https://youtu.be/-kLJGbAwb0M)** |
@@ -165,7 +166,7 @@ Smart Methods · Internship · Web & Applications Track
 
 📹 **[Watch Demo on YouTube](https://youtu.be/-kLJGbAwb0M)**
 
-🎤 **[Voice Control](https://webtask1.free.je/h/voice.html)** · 🎮 **[Manual Control](https://webtask1.free.je/h/manual.html)**
+🎤 **[Voice Control](https://webtask1.free.je/h/voice.html)** · 🎮 **[Manual Control](https://webtask1.free.je/h/manual.html)** · 🏠 **[Home](https://webtask1.free.je/h/)**
 
 *Educational project — Smart Methods training program*
 
